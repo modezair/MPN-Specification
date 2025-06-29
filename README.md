@@ -12,11 +12,10 @@ Can also be encrypted, which is what most Mophun-based games do.
 
 --FORMAT--
 
-//	ALL data is in little endian.
+//	ALL numerals are in little endian.
 
 4	Signature
-	Must equal "VMGP".
-  Appears in a hex editor as 0x564D4750.
+	Must equal 0x50474D56 (endian reversed = "VMGP").
 	
 4	HeapSize (divided by 4)
 4	Flags
