@@ -18,25 +18,25 @@ Can also be encrypted, which is what most Mophun-based games do.
 	Must equal 0x50474D56 (endian reversed = "VMGP").
 	
 4	HeapSize (divided by 4)
-4	Flags
-	Bits: CXXXXXXX XXXXXXXX SSSSSSSS SSSSSSSS
+2	StackSize (divided by 4)
+2	Flags
+	Bits: CXXXXXXX XXXXXXXX
 	X	= Unknown
 	C	= Compressed
-	S	= StackSize (divided by 4)
 	
 4	CodeSize
 4	InitializedDataSize		(Embedded game data)
 4	UninitializedDataSize	(No idea)
 4	MetadataSize
 4	???
-	Non-zero if file is compressed.
-	It's not even equal to the uncompressed size...
+	Usually non-zero if file is compressed...
+	...at least from my POV.
 	
 4	AddressCount
 4	FunctionTableSize
 	This value, on parsing, must be rounded up such that it becomes
 	divisible by 4. At least, that's what the official Mophun
-	emulator does. No idea why.
+	emulator does.
 
 
 --CODE-- (size: CodeSize)
@@ -44,7 +44,7 @@ if Compressed: {
 	4	CompressedSize
 }
 //	If Compressed is true, data from here until the next section is
-//	compressed using Mophun LZ.
+//	compressed using MoPack, or by another name, Mophun LZ.
 
 -----------------------------------
 
@@ -61,19 +61,17 @@ AA BB CC DD [EEEEEEEE], where:
 	DD = Argument 3
 	EEEEEEEE = Argument 4 (for 8-byte operations)
 	
-
-I am lazy and unwilling to list any opcodes.
-Literally just use pip-objdump.exe (from the official Mophun SDK) with
+One may use pip-objdump.exe (from the official Mophun SDK) with
 "--disassemble" on any MPN file to get its assembly & opcodes.
 Use the assembly reference (doc/sdk/MophunAsmRef.pdf) to see each
 opcode's purpose.
-Or just reference any open-source Mophun emulator's source code.
+...or just reference any open-source Mophun emulator's source code.
 
 Here's what I'll tell you, though:
 
-	See that EEEEEEEE argument?
-	If the bitwise operation EEEEEEEE & 0x80000000 yields 0x80000000,
-  it is an integer.
+	Notice the EEEEEEEE argument.
+	If the bitwise operation (EEEEEEEE & 0x80000000) yields 0x80000000,
+  	it is an integer.
 	Otherwise, it is an address ID. Check --ADDRESS TABLE--.
 	
 	Examples:
@@ -98,12 +96,12 @@ Here's what I'll tell you, though:
 ////////////////////////
 //	WORK IN PROGRESS  //
 ////////////////////////
-// Stores the app's... well... metadata. What did you expect?
+// Stores the app's metadata.
 // (for now, just skip `MetadataSize` bytes)
 
 --ADDRESS TABLE--
 
-// NOTE: Mophun counts address IDs starting from 1 for some reason.
+// NOTE: Mophun counts address IDs starting from 1.
 
 repeat AddressCount: {
 	1	AddressType
@@ -125,7 +123,7 @@ repeat AddressCount: {
 //	built-in function names.
 //	Some executables use custom functions that aren't from Mophun.
 //	This results in emulators that don't have the required patches throwing
-//	an error, complaining of "unresolved symbol access" or whatever.
+//	an error, complaining of "unresolved symbol access" or similar.
 //	Examples include:
 //		Worms: World Party -> {
 //			wormsSetFocusFunc
