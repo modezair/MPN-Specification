@@ -3,7 +3,7 @@ Specification for the Mophun executable format (*.mpn), found in numerous old (~
 ```
 MOPHUN EXECUTABLE (*.mpn)
 READ IN LITTLE ENDIAN
-WRITTEN BY MDZAIR
+WRITTEN BY MODEZAIR
 
 --INFO--
 Executable format that runs games for the once-popular Mophun gaming platform.
