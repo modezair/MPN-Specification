@@ -49,6 +49,10 @@ Can be encrypted and/or compressed (using MoPack).
     
 4   szNameTable
     Name table size.
+
+<NOTE: For each section (except Resources), if the compressed flag is activated, first follows 4 bytes
+ for the size of the compressed data, and then the compressed data. The uncompressed
+ size is the size of the given section.>
     
 <Section Code, Size = szCode> ...
 
