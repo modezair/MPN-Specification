@@ -1,9 +1,115 @@
 # MPN-Specification
 Specification for the Mophun executable format (*.mpn), found in numerous old (~2004 AD) mobile games.
+New version:
+```
+Mophun executable (*.mpn)
+Read in little endian
+Written by Native9x
+Specification version: 2
+
+--INFO--
+Executable format for games made in Mophun.
+Can be encrypted and/or compressed (using MoPack).
+
+--FORMAT--
+<Section Header, Size = 0x28>
+4   Signature
+    Must equal 0x50474D56, hex for "VMGP".
+    
+4   szHeap
+    Dynamic heap size; multiply by 4, with exceptions like Worms: World Party.
+    
+2   szStack
+    Stack size; multiply by 4.
+    
+2   Flags
+    Executable flags.
+    0x8000: Compressed
+    IDK the rest. Sorry.
+    
+4   szCode
+    Code size.
+    This value must be 4-byte-aligned. If it isn't, then something is
+    seriously wrong.
+    
+4   szInitData
+    Initialized data size. (uint8_t RAW_DATA[] = {0, 1, 2, 3};)
+    
+4   szUninitData
+    Uninitialized data size. (VMGPFONT FontA;)
+    
+4   szResources
+    Resource section size.
+    
+4   ???
+    I don't know what its purpose is.
+    
+4   nAddresses
+    No. of address constants.
+    
+4   szNameTable
+    Name table size.
+    
+<Section Code, Size = szCode> ...
+
+<Section InitData, Size = szInitData> ...
+    Initialized data.
+    This stores data defined globally in a source file in the following form:
+        int something = 3234;
+        uint8_t RAW_DATA[] = {0, 1, 2, 3};
+
+<Section Resources, Size = szResources>
+    The following code may be written in Python style.
+    
+4   ROffset
+    Offset of the resource, relative to the beginning of the resource section.
+    The 1st resource is usually the metadata.
+    
+ResourceOffsets = []
+    
+while ROffset != 0:
+  4   ROffset
+  ResourceOffsets.append(ROffset)
+  
+<Raw resource data...>   
+
+<Section Addresses, Size = nAddresses * 8>
+repeat  nAddresses {
+    
+    1   AddressType
+        0x02 = Function import
+        0x13 = Section marker
+        0x11 = Code address
+        
+    3   AddressArg1
+        Its purpose depends on AddressType.
+        0x02 = Function name offset (relative to <Section NameTable>, check below)
+        0x13 = Section name offset (relative to <Section NameTable>)
+        Unused by 0x11.
+        
+    4   AddressArg2
+        Its purpose depends on AddressType and AddressArg1.
+        AddressType:
+            0x11 = Code offset
+            
+    <NOTE: This section is still under construction.>
+}
+
+<Section NameTable, Size = ALIGN_4_BYTES(szNameTable)>
+    <NOTE: ALIGN_4_BYTES(x) = (((x >> 4) + 1) << 4)>
+    Section names, separated by null terminators (0x00).
+    The aligning stuff at the end seems to resemble
+    garbage data caused by overreading a buffer.
+    It might simply be an alignment signature.
+   
+End
+```
+
+Old version:
 ```
 MOPHUN EXECUTABLE (*.mpn)
 READ IN LITTLE ENDIAN
-WRITTEN BY MODEZAIR
+WRITTEN BY NATIVE9X
 
 --INFO--
 Executable format that runs games for the once-popular Mophun gaming platform.
