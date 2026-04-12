@@ -96,6 +96,7 @@ repeat  nAddresses {
         0x23 = Named initialized data address
         0x41 = Uninitialized data address
         0x43 = Named uninitialized data address
+		0x67 = Constant
         
     3   AddressArg1
         Its purpose depends on AddressType.
@@ -112,6 +113,7 @@ repeat  nAddresses {
             0x21, 0x23  = Initialized data offset
             0x41, 0x43  = Uninitialized data offset
             0x18        = Offset relative to base address ID
+			0x67		= Constant value
             
     <NOTE: This section is still under construction.>
 }
