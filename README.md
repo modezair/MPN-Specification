@@ -4,12 +4,14 @@ New version:
 ```
 Mophun executable (*.mpn)
 Read in little endian
-Written by Native9x
-Specification version: 2
+Written by modezair
+
+NOTE: Some information may be wrong.
 
 --INFO--
 Executable format for games made in Mophun.
 Can be encrypted and/or compressed (using MoPack).
+Address IDs are counted starting from 1.
 
 --FORMAT--
 <Section Header, Size = 0x28>
@@ -28,21 +30,21 @@ Can be encrypted and/or compressed (using MoPack).
     IDK the rest. Sorry.
     
 4   szCode
-    Code size.
+    Code (.text) size.
     This value must be 4-byte-aligned. If it isn't, then something is
     seriously wrong.
     
 4   szInitData
-    Initialized data size. (uint8_t RAW_DATA[] = {0, 1, 2, 3};)
+    Initialized data (.data) size. (uint8_t RAW_DATA[] = {0, 1, 2, 3};)
     
 4   szUninitData
-    Uninitialized data size. (VMGPFONT FontA;)
+    Uninitialized data (.bss) size. (VMGPFONT FontA;)
     
 4   szResources
-    Resource section size.
+    Resource section (.rsrc) size.
     
-4   ???
-    I don't know what its purpose is.
+4   szDir
+    "Dir count". I don't know what its purpose is.
     
 4   nAddresses
     No. of address constants.
@@ -51,10 +53,13 @@ Can be encrypted and/or compressed (using MoPack).
     Name table size.
 
 <NOTE: For each section (except Resources), if the compressed flag is activated, first follows 4 bytes
- for the size of the compressed data, and then the compressed data. The uncompressed
- size is the size of the given section.>
+ for the size of the compressed data, and then the compressed data. The uncompressed size is the given
+ size of the section. (More research is required.)>
     
 <Section Code, Size = szCode> ...
+    The program code.
+    All instructions are 4-byte aligned, which means that if the code size,
+    given by szCode, is not 4-byte aligned, then something is wrong.
 
 <Section InitData, Size = szInitData> ...
     Initialized data.
@@ -78,33 +83,43 @@ while ROffset != 0:
 <Raw resource data...>   
 
 <Section Addresses, Size = nAddresses * 8>
+    Address IDs are taken starting from 1.
+
 repeat  nAddresses {
     
     1   AddressType
         0x02 = Function import
-        0x13 = Section marker
         0x11 = Code address
+        0x13 = Named code address
+        0x18 = Relative address
+        0x21 = Initialized data address
+        0x23 = Named initialized data address
+        0x41 = Uninitialized data address
+        0x43 = Named uninitialized data address
         
     3   AddressArg1
         Its purpose depends on AddressType.
-        0x02 = Function name offset (relative to <Section NameTable>, check below)
-        0x13 = Section name offset (relative to <Section NameTable>)
-        Unused by 0x11.
+        0x02              = Function name offset (relative to <Section NameTable>, check below)
+        0x13, 0x23, 0x43  = Section name offset (relative to <Section NameTable>)
+        0x18              = Base address ID (starting from 1, because all address IDs start from 1.)
+        (Other types are yet to be studied.)
+        Otherwise         = Unused
         
     4   AddressArg2
         Its purpose depends on AddressType and AddressArg1.
         AddressType:
-            0x11 = Code offset
+            0x11, 0x13  = Code offset
+            0x21, 0x23  = Initialized data offset
+            0x41, 0x43  = Uninitialized data offset
+            0x18        = Offset relative to base address ID
             
     <NOTE: This section is still under construction.>
 }
 
-<Section NameTable, Size = ALIGN_4_BYTES(szNameTable)>
-    <NOTE: ALIGN_4_BYTES(x) = (((x >> 4) + 1) << 4)>
+<Section NameTable, Size = szNameTable, 4-byte aligned>
     Section names, separated by null terminators (0x00).
-    The aligning stuff at the end seems to resemble
-    garbage data caused by overreading a buffer.
-    It might simply be an alignment signature.
+    The first byte seems to always be a null terminator
+    for some reason.
    
 End
 ```
